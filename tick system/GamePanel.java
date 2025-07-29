@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
 import java.util.Random;
 import javax.swing.JPanel;
 
@@ -27,7 +28,7 @@ public class GamePanel extends JPanel implements Runnable{
     // Regular fields
     public int gamestate;
     private final int FPS = 60;
-    public static int FOV = 90;
+    public static int FOV = 45;
 
     private double[] p1;
     private double[] p2;
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel implements Runnable{
     private double[] p8;
 
     private double[][] points;
+
 
 
     public GamePanel() {// Constructor
@@ -55,9 +57,10 @@ public class GamePanel extends JPanel implements Runnable{
         this.gamestate = 0;
         
         this.cam = new Cam(0, 0, 0);
+
         
-        int scale = 100;
-        int dist = 2;
+        int scale = 200;
+        int dist = 5;
         p1 = new double[]{1 * scale, 1 * scale, -1 + dist};
         p2 = new double[]{1 * scale, -1 * scale, -1 + dist};
         p3 = new double[]{-1 * scale, 1 * scale, -1 + dist};
@@ -110,7 +113,20 @@ public class GamePanel extends JPanel implements Runnable{
 
         switch (gamestate){
             case 0 -> {
-                
+                if (key.keys[KeyEvent.VK_D]){// going right
+                    this.cam.pos[0] +=5;
+                }
+                if (key.keys[KeyEvent.VK_A]){// going left
+                    this.cam.pos[0] -=5;
+                }
+
+                if (key.keys[KeyEvent.VK_W]){
+                    this.cam.pos[2] +=1;
+                }
+                if (key.keys[KeyEvent.VK_S]){
+                    this.cam.pos[2] -=1;
+                }
+                //this.cam.pos[2] --;
             }
         }
         mouse.previous = mouse.pressed;
@@ -124,40 +140,71 @@ public class GamePanel extends JPanel implements Runnable{
 
         switch (gamestate) {
             case 0 -> {// 
-                int counter = 0;
-                for (double[] p : points){
-                    counter ++;
-                    double projected_x = Utils.near_plane_intersection(p[0], p[2], FOV);
-                    double projected_y = Utils.near_plane_intersection(p[1], p[2], FOV);
-                    g2D.setColor(Color.blue);
-                    g2D.fillOval((int)projected_x + SCREEN_WIDTH/2 - 5, (int)projected_y + SCREEN_HEIGHT/2 - 5, 10, 10);
+                
+                g2D.setColor(Color.blue);
+                if (p1[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p1_projected_x = Utils.near_plane_intersection(p1[0] - this.cam.pos[0], p1[2] - this.cam.pos[2], FOV);
+                    double p1_projected_y = Utils.near_plane_intersection(p1[1] - this.cam.pos[1], p1[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p1_projected_x - 5 + SCREEN_WIDTH/2, (int)p1_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
                 }
-                g2D.drawLine((int)Utils.near_plane_intersection(p1[0], p1[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p1[1], p1[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p2[0], p2[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p2[1], p2[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p1[0], p1[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p1[1], p1[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p3[0], p3[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p3[1], p3[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p4[0], p4[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p4[1], p4[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p3[0], p3[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p3[1], p3[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p4[0], p4[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p4[1], p4[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p2[0], p2[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p2[1], p2[2], FOV) + SCREEN_HEIGHT/2);
 
-                g2D.drawLine((int)Utils.near_plane_intersection(p5[0], p5[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p5[1], p5[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p6[0], p6[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p6[1], p6[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p5[0], p5[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p5[1], p5[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p7[0], p7[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p7[1], p7[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p8[0], p8[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p8[1], p8[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p7[0], p7[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p7[1], p7[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p8[0], p8[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p8[1], p8[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p6[0], p6[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p6[1], p6[2], FOV) + SCREEN_HEIGHT/2);
+                if (p2[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p2_projected_x = Utils.near_plane_intersection(p2[0] - this.cam.pos[0], p2[2] - this.cam.pos[2], FOV);
+                    double p2_projected_y = Utils.near_plane_intersection(p2[1] - this.cam.pos[1], p2[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p2_projected_x - 5 + SCREEN_WIDTH/2, (int)p2_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p3[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p3_projected_x = Utils.near_plane_intersection(p3[0] - this.cam.pos[0], p3[2] - this.cam.pos[2], FOV);
+                    double p3_projected_y = Utils.near_plane_intersection(p3[1] - this.cam.pos[1], p3[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p3_projected_x - 5 + SCREEN_WIDTH/2, (int)p3_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p4[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p4_projected_x = Utils.near_plane_intersection(p4[0] - this.cam.pos[0], p4[2] - this.cam.pos[2], FOV);
+                    double p4_projected_y = Utils.near_plane_intersection(p4[1] - this.cam.pos[1], p4[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p4_projected_x - 5 + SCREEN_WIDTH/2, (int)p4_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p5[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p5_projected_x = Utils.near_plane_intersection(p5[0] - this.cam.pos[0], p5[2] - this.cam.pos[2], FOV);
+                    double p5_projected_y = Utils.near_plane_intersection(p5[1] - this.cam.pos[1], p5[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p5_projected_x - 5 + SCREEN_WIDTH/2, (int)p5_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p6[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p6_projected_x = Utils.near_plane_intersection(p6[0] - this.cam.pos[0], p6[2] - this.cam.pos[2], FOV);
+                    double p6_projected_y = Utils.near_plane_intersection(p6[1] - this.cam.pos[1], p6[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p6_projected_x - 5 + SCREEN_WIDTH/2, (int)p6_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p7[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p7_projected_x = Utils.near_plane_intersection(p7[0] - this.cam.pos[0], p7[2] - this.cam.pos[2], FOV);
+                    double p7_projected_y = Utils.near_plane_intersection(p7[1] - this.cam.pos[1], p7[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p7_projected_x - 5 + SCREEN_WIDTH/2, (int)p7_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                
+                if (p8[2] - this.cam.pos[2] > Utils.near_plane) {
+                    double p8_projected_x = Utils.near_plane_intersection(p8[0] - this.cam.pos[0], p8[2] - this.cam.pos[2], FOV);
+                    double p8_projected_y = Utils.near_plane_intersection(p8[1] - this.cam.pos[1], p8[2] - this.cam.pos[2], FOV);
+                    g2D.fillOval((int)p8_projected_x - 5 + SCREEN_WIDTH/2, (int)p8_projected_y - 5 + SCREEN_HEIGHT/2, 10, 10);
+                }
+                    
+                
+                // g2D.drawLine((int)p1_projected_x + SCREEN_WIDTH/2, (int)p1_projected_y + SCREEN_HEIGHT/2, (int)p2_projected_x + SCREEN_WIDTH/2, (int)p2_projected_y + SCREEN_HEIGHT/2);//rear face
+                // g2D.drawLine((int)p1_projected_x + SCREEN_WIDTH/2, (int)p1_projected_y + SCREEN_HEIGHT/2, (int)p3_projected_x + SCREEN_WIDTH/2, (int)p3_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p4_projected_x + SCREEN_WIDTH/2, (int)p4_projected_y + SCREEN_HEIGHT/2, (int)p3_projected_x + SCREEN_WIDTH/2, (int)p3_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p4_projected_x + SCREEN_WIDTH/2, (int)p4_projected_y + SCREEN_HEIGHT/2, (int)p2_projected_x + SCREEN_WIDTH/2, (int)p2_projected_y + SCREEN_HEIGHT/2);
 
-                g2D.drawLine((int)Utils.near_plane_intersection(p1[0], p1[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p1[1], p1[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p5[0], p5[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p5[1], p5[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p7[0], p7[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p7[1], p7[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p3[0], p3[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p3[1], p3[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p4[0], p4[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p4[1], p4[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p8[0], p8[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p8[1], p8[2], FOV) + SCREEN_HEIGHT/2);
-                g2D.drawLine((int)Utils.near_plane_intersection(p6[0], p6[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p6[1], p6[2], FOV) + SCREEN_HEIGHT/2,
-                     (int)Utils.near_plane_intersection(p2[0], p2[2], FOV)+ SCREEN_WIDTH/2, (int)Utils.near_plane_intersection(p2[1], p2[2], FOV) + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p5_projected_x + SCREEN_WIDTH/2, (int)p5_projected_y + SCREEN_HEIGHT/2, (int)p6_projected_x + SCREEN_WIDTH/2, (int)p6_projected_y + SCREEN_HEIGHT/2);//front face
+                // g2D.drawLine((int)p5_projected_x + SCREEN_WIDTH/2, (int)p5_projected_y + SCREEN_HEIGHT/2, (int)p7_projected_x + SCREEN_WIDTH/2, (int)p7_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p8_projected_x + SCREEN_WIDTH/2, (int)p8_projected_y + SCREEN_HEIGHT/2, (int)p7_projected_x + SCREEN_WIDTH/2, (int)p7_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p8_projected_x + SCREEN_WIDTH/2, (int)p8_projected_y + SCREEN_HEIGHT/2, (int)p6_projected_x + SCREEN_WIDTH/2, (int)p6_projected_y + SCREEN_HEIGHT/2);
+
+                // g2D.drawLine((int)p1_projected_x + SCREEN_WIDTH/2, (int)p1_projected_y + SCREEN_HEIGHT/2,(int)p5_projected_x + SCREEN_WIDTH/2, (int)p5_projected_y + SCREEN_HEIGHT/2);//connecting edges
+                // g2D.drawLine((int)p7_projected_x + SCREEN_WIDTH/2, (int)p7_projected_y + SCREEN_HEIGHT/2,(int)p3_projected_x + SCREEN_WIDTH/2, (int)p3_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p4_projected_x + SCREEN_WIDTH/2, (int)p4_projected_y + SCREEN_HEIGHT/2,(int)p8_projected_x + SCREEN_WIDTH/2, (int)p8_projected_y + SCREEN_HEIGHT/2);
+                // g2D.drawLine((int)p6_projected_x + SCREEN_WIDTH/2, (int)p6_projected_y + SCREEN_HEIGHT/2,(int)p2_projected_x + SCREEN_WIDTH/2, (int)p2_projected_y + SCREEN_HEIGHT/2);
             }
         }
         
